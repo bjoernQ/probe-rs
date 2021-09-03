@@ -674,6 +674,7 @@ pub trait JTAGAccess: DebugProbe {
         address: u32,
         data: &[u8],
         len: u32,
+        hint_will_read: bool,
     ) -> Result<Vec<u8>, DebugProbeError>;
 
     /// Schedules a register write to be executed later by calling `execute`
@@ -685,6 +686,7 @@ pub trait JTAGAccess: DebugProbe {
         address: u32,
         data: &[u8],
         len: u32,
+        hint_will_read: bool,
         transform: fn(Vec<u8>) -> Result<u32, DebugProbeError>,
     ) -> Result<Box<dyn DeferredCommandResult>, DebugProbeError>;
 

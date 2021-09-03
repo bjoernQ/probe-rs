@@ -74,7 +74,7 @@ impl Dtm {
         let bytes = reg_value.to_le_bytes();
 
         self.probe
-            .write_register(DTMCS_ADDRESS, &bytes, DTMCS_WIDTH)?;
+            .write_register(DTMCS_ADDRESS, &bytes, DTMCS_WIDTH, true)?;
 
         Ok(())
     }
@@ -88,6 +88,7 @@ impl Dtm {
         address: u64,
         value: u32,
         op: DmiOperation,
+        hint_will_read: bool,
     ) -> Result<Box<dyn DeferredCommandResult>, DebugProbeError> {
         let register_value: u128 = ((address as u128) << DMI_ADDRESS_BIT_OFFSET)
             | ((value as u128) << DMI_VALUE_BIT_OFFSET)
@@ -98,7 +99,7 @@ impl Dtm {
         let bit_size = self.abits + DMI_ADDRESS_BIT_OFFSET;
 
         self.probe
-            .schedule_write_register(DMI_ADDRESS, &bytes, bit_size, |response_bytes| {
+            .schedule_write_register(DMI_ADDRESS, &bytes, bit_size, hint_will_read, |response_bytes| {
                 let response_value: u128 =
                     response_bytes.iter().enumerate().fold(0, |acc, elem| {
                         let (byte_offset, value) = elem;
@@ -140,7 +141,7 @@ impl Dtm {
 
         let bit_size = self.abits + DMI_ADDRESS_BIT_OFFSET;
 
-        let response_bytes = self.probe.write_register(DMI_ADDRESS, &bytes, bit_size)?;
+        let response_bytes = self.probe.write_register(DMI_ADDRESS, &bytes, bit_size, true)?;
 
         let response_value: u128 = response_bytes.iter().enumerate().fold(0, |acc, elem| {
             let (byte_offset, value) = elem;

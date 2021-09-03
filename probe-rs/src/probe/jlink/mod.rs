@@ -657,6 +657,7 @@ impl JTAGAccess for JLink {
         address: u32,
         data: &[u8],
         len: u32,
+        hint_will_read: bool,
     ) -> Result<Vec<u8>, DebugProbeError> {
         let address_bits = address.to_le_bytes();
 
@@ -667,7 +668,7 @@ impl JTAGAccess for JLink {
             ));
         }
 
-        if self.current_ir_reg != address {
+        if hint_will_read || self.current_ir_reg != address {
             // Write IR register
             self.write_ir(&address_bits[..1], 5)?;
         }
@@ -686,7 +687,7 @@ impl JTAGAccess for JLink {
         self.queued_commands = vec![];
 
         for cmd in queued_commands.iter() {
-            let cmd_res = self.write_register(cmd.address, &cmd.data[..], cmd.len);
+            let cmd_res = self.write_register(cmd.address, &cmd.data[..], cmd.len, cmd.hint_will_read);
 
             match cmd_res {
                 Ok(cmd_res) => results.push(CommandResult::U32((cmd.transform)(cmd_res).map_err(
@@ -714,6 +715,7 @@ impl JTAGAccess for JLink {
         address: u32,
         data: &[u8],
         len: u32,
+        hint_will_read: bool,
         transform: fn(Vec<u8>) -> Result<u32, DebugProbeError>,
     ) -> Result<Box<dyn DeferredCommandResult>, DebugProbeError> {
         let mut data_vec = Vec::new();
@@ -723,6 +725,7 @@ impl JTAGAccess for JLink {
             address,
             data: data_vec,
             len,
+            hint_will_read,
             transform,
         });
 
@@ -785,6 +788,7 @@ struct WriteCommand {
     address: u32,
     data: Vec<u8>,
     len: u32,
+    hint_will_read: bool,
     transform: fn(Vec<u8>) -> Result<u32, DebugProbeError>,
 }
 

@@ -564,6 +564,7 @@ impl JTAGAccess for FtdiProbe {
         address: u32,
         data: &[u8],
         len: u32,
+        _hint_will_read: bool,
     ) -> Result<Vec<u8>, DebugProbeError> {
         log::debug!("write_register({:#x}, {:?}, {})", address, data, len);
         let r = self
@@ -585,6 +586,7 @@ impl JTAGAccess for FtdiProbe {
         address: u32,
         data: &[u8],
         len: u32,
+        hint_will_read: bool,
         transform: fn(Vec<u8>) -> Result<u32, DebugProbeError>,
     ) -> Result<Box<dyn DeferredCommandResult>, DebugProbeError> {
         self.queued_commands.push(Box::new(

@@ -1271,7 +1271,7 @@ impl<'probe> RiscvCommunicationInterface {
         value: u32,
     ) -> Result<Box<dyn DeferredCommandResult>, DebugProbeError> {
         self.dtm
-            .schedule_dmi_register_access(address, value, DmiOperation::Write)
+            .schedule_dmi_register_access(address, value, DmiOperation::Write, false)
     }
 
     pub(super) fn schedule_read_dm_register<R: DebugRegister>(
@@ -1291,11 +1291,11 @@ impl<'probe> RiscvCommunicationInterface {
     ) -> Result<Box<dyn DeferredCommandResult>, DebugProbeError> {
         // Prepare the read by sending a read request with the register address
         self.dtm
-            .schedule_dmi_register_access(address, 0, DmiOperation::Read)?;
+            .schedule_dmi_register_access(address, 0, DmiOperation::Read, false)?;
 
         // Read back the response from the previous request.
         self.dtm
-            .schedule_dmi_register_access(0, 0, DmiOperation::NoOp)
+            .schedule_dmi_register_access(0, 0, DmiOperation::NoOp, true)
     }
 
     fn schedule_read_large_dtm_register<V, R>(
